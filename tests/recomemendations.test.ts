@@ -72,7 +72,22 @@ describe("Testing route post /recommendations", ()=>{
 
 })
 
+describe("testing route get /recommendations", () => {
+
+	it("return 200 - Posted twenty recommendations, but need to get just ten", async () => {
+
+		await scenarioFactory.createScenario20Recommendations();
+
+		const result = await supertest(app).get("/recommendations/").send();
+
+		expect(result.status).toBe(200);
+		expect(result.body).toBeInstanceOf(Array);
+		expect(result.body.length).not.toBeGreaterThan(10);
+	});
+
+});
 
 afterAll(async () => {
 	await prisma.$disconnect();
 });
+
