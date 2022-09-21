@@ -71,3 +71,8 @@ describe("Testing route post /recommendations", ()=>{
 	});
 
 })
+
+
+afterAll(async () => {
+	await prisma.$disconnect();
+});
