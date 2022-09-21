@@ -72,7 +72,7 @@ describe("Testing route post /recommendations", ()=>{
 
 })
 
-describe("testing route get /recommendations", () => {
+describe("Testing route get /recommendations", () => {
 
 	it("return 200 - Posted twenty recommendations, but need to get just ten", async () => {
 
@@ -85,6 +85,24 @@ describe("testing route get /recommendations", () => {
 		expect(result.body.length).not.toBeGreaterThan(10);
 	});
 
+});
+
+describe("Test in route get /recommendations/:id", () => {
+	it("return 200 - need to get the correct recommendations with valid id", async () => {
+		const recommendationById = await scenarioFactory.createScenarioToReturnOneRecommendation();
+
+		const result = await supertest(app).get(`/recommendations/${recommendationById.id}`).send();
+
+		expect(result.status).toBe(200);
+		expect(result.body).toBeInstanceOf(Object);
+		expect(result.body).toEqual(recommendationById);
+	});
+
+	it("return 404 - nonexistent id", async () => {
+		const result = await supertest(app).get("/recommendations/123456789").send();
+
+		expect(result.status).toBe(404);
+	});
 });
 
 afterAll(async () => {

@@ -18,3 +18,13 @@ export async function createScenario20Recommendations() {
 
     await prisma.recommendation.createMany({ data: createManyRecomendation });
 }
+
+export async function createScenarioToReturnOneRecommendation() {
+	const newRecommendation = await recommendationFactory.CreateRecommendationFactory();
+
+	const result = await prisma.recommendation.create({
+		data: newRecommendation,
+	});
+
+	return result;
+}
