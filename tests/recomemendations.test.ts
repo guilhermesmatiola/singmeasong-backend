@@ -163,7 +163,26 @@ describe("Test in route post /recommendations/:id/downvote", () => {
 	});
 });
 
+describe("Test in route get /recommendations/random", () => {
+	
+	it("return 200 - get a object", async () => {
+		await scenarioFactory.createScenarioForGetRandomRecommendation();
 
+		const result = await supertest(app).get("/recommendations/random").send();
+
+		expect(result.status).toBe(200);
+		expect(result.body).toBeInstanceOf(Object);
+	});
+
+    it("return 404 - no song posted", async () => {
+
+		const result = await supertest(app).get("/recommendations/random").send();
+
+		expect(result.status).toBe(404);
+		expect(result.body).toBeInstanceOf(Object);
+	});
+
+});
 afterAll(async () => {
 	await prisma.$disconnect();
 });
