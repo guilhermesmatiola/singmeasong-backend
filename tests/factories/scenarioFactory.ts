@@ -14,9 +14,13 @@ export async function createScenario20Recommendations() {
     for (let i = 0; i < 19; i++) {
         const create20recomendations = await recommendationFactory.CreateRecommendationFactory();
         createManyRecomendation.push(create20recomendations)
+
+        await prisma.recommendation.create({
+			data: { ...create20recomendations, score: Number(faker.random.numeric(3)) },
+		});
       }
 
-    await prisma.recommendation.createMany({ data: createManyRecomendation });
+    //await prisma.recommendation.createMany({ data: createManyRecomendation });
 }
 
 export async function createScenarioToReturnOneRecommendation() {

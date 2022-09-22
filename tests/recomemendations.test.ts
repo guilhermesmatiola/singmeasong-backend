@@ -183,6 +183,50 @@ describe("Test in route get /recommendations/random", () => {
 	});
 
 });
+
+describe("Test in route get /recommendations/top/amount", () => {
+
+	it("return 200 - return array of songs with valid params", async () => {
+
+		await scenarioFactory.createScenario20Recommendations();
+
+		const randomAmount = 5;
+		const result = await supertest(app).get(`/recommendations/top/${randomAmount}`).send();
+
+		expect(result.status).toBe(200);
+		expect(result.body).toBeInstanceOf(Array);
+	});
+
+    it("return 200 - array in the correct order", async () => {
+
+		await scenarioFactory.createScenario20Recommendations();
+
+		const randomAmount = 4;
+		const result = await supertest(app).get(`/recommendations/top/${randomAmount}`).send();
+
+		let isFirstItemHighScore = false;
+
+		if (result.body[0].score > result.body[1].score) {
+			isFirstItemHighScore = true;
+		}
+
+		expect(result.status).toBe(200);
+		expect(result.body).toBeInstanceOf(Array);
+		expect(isFirstItemHighScore).toBe(true);
+	});
+
+	it("returns 500 with invalid params", async () => {
+
+		await scenarioFactory.createScenarioToReturnOneRecommendation();
+
+		const wrongRandomAmount = "teste";
+		const result = await supertest(app).get(`/recommendations/top/${wrongRandomAmount}`).send();
+
+		expect(result.status).toBe(500);
+	});
+
+});
+
 afterAll(async () => {
 	await prisma.$disconnect();
 });
