@@ -20,10 +20,21 @@ export async function createScenario20Recommendations() {
 }
 
 export async function createScenarioToReturnOneRecommendation() {
+
 	const newRecommendation = await recommendationFactory.CreateRecommendationFactory();
 
 	const result = await prisma.recommendation.create({
 		data: newRecommendation,
+	});
+
+	return result;
+}
+
+export async function createScenarioToDeleteWithDownvote() {
+	const recommendation = await recommendationFactory.CreateRecommendationFactory();
+
+	const result = await prisma.recommendation.create({
+		data: { ...recommendation, score: -5 },
 	});
 
 	return result;

@@ -133,6 +133,37 @@ describe("Test in route post /recommendations/:id/upvote", () => {
 
 });
 
+describe("Test in route post /recommendations/:id/downvote", () => {
+
+	it("return 200 - valid id and negative votes", async () => {
+
+		const recommendationById = await scenarioFactory.createScenarioToReturnOneRecommendation();
+
+		const result = await supertest(app).post(`/recommendations/${recommendationById.id}/downvote`).send();
+
+		const recommendationDownvoted = await prisma.recommendation.findUnique({
+			where: { id: recommendationById.id },
+		});
+
+		expect(result.status).toBe(200);
+		expect(recommendationDownvoted.score).toBeLessThan(0);
+	});
+
+    it("return 200 - valid id and delete recommendation with -5 score", async () => {
+
+		const recommendationById = await scenarioFactory.createScenarioToDeleteWithDownvote();
+
+		const result = await supertest(app).post(`/recommendations/${recommendationById.id}/downvote`).send();
+		const RecommendationDeleted = await prisma.recommendation.findUnique({
+			where: { id: recommendationById.id }
+		});
+
+		expect(result.status).toBe(200);
+		expect(RecommendationDeleted).toBeNull();
+	});
+});
+
+
 afterAll(async () => {
 	await prisma.$disconnect();
 });
