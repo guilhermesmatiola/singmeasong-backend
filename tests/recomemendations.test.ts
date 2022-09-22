@@ -70,7 +70,7 @@ describe("Testing route post /recommendations", ()=>{
 		expect(result.status).toBe(409);
 	});
 
-})
+});
 
 describe("Testing route get /recommendations", () => {
 
@@ -88,7 +88,9 @@ describe("Testing route get /recommendations", () => {
 });
 
 describe("Test in route get /recommendations/:id", () => {
+
 	it("return 200 - need to get the correct recommendations with valid id", async () => {
+
 		const recommendationById = await scenarioFactory.createScenarioToReturnOneRecommendation();
 
 		const result = await supertest(app).get(`/recommendations/${recommendationById.id}`).send();
@@ -102,10 +104,35 @@ describe("Test in route get /recommendations/:id", () => {
 		const result = await supertest(app).get("/recommendations/123456789").send();
 
 		expect(result.status).toBe(404);
+	}); 
+
+});
+
+describe("Test in route post /recommendations/:id/upvote", () => {
+
+	it("return 200 - if have a valid id && score greater than 0", async () => {
+
+		const recommendationById = await scenarioFactory.createScenarioToReturnOneRecommendation();
+
+		const result = await supertest(app).post(`/recommendations/${recommendationById.id}/upvote`).send();
+		const recommendationUpvoted = await prisma.recommendation.findUnique({
+			where: { id: recommendationById.id },
+		});
+
+		expect(result.status).toBe(200);
+		expect(recommendationUpvoted.score).toBeGreaterThan(0);
 	});
+
+    it("return 404 - if have a invalid id", async () => {
+
+		const result = await supertest(app).post("/recommendations/123456789/upvote").send();
+
+		expect(result.status).toBe(404);
+		expect(result.text).toBe("");
+	});
+
 });
 
 afterAll(async () => {
 	await prisma.$disconnect();
 });
-
