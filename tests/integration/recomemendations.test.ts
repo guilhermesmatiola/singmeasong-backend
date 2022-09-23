@@ -1,8 +1,8 @@
-import app from "../src/app";
-import {prisma} from "../src/database"
+import app from "../../src/app";
+import {prisma} from "../../src/database"
 import supertest from "supertest";
-import * as recommendationFactory from "./factories/recommendFactory"
-import * as scenarioFactory from "./factories/scenarioFactory"
+import * as recommendationFactory from "../factories/recommendFactory"
+import * as scenarioFactory from "../factories/scenarioFactory"
 
 beforeEach(async () =>{
     await scenarioFactory.deleteData();
