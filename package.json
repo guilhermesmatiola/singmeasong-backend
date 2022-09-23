@@ -8,7 +8,7 @@
     "test": "dotenv -e .env.test prisma migrate dev && dotenv -e .env.test -- jest -i --coverage",
     "dev": "dotenv -e .env.test nodemon src/server.ts",
     "test:unit": "dotenv -e .env.test jest -- -i --coverage --testPathPattern=tests/unit",
-		"test:integration": "dotenv -e .env.test jest -- -i --coverage --testPathPattern=tests/integration"
+    "test:integration": "dotenv -e .env.test jest -- -i --coverage --testPathPattern=tests/integration"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +22,8 @@
     "@types/joi": "^17.2.3",
     "@types/node": "^16.3.3",
     "@types/supertest": "^2.0.11",
+    "@typescript-eslint/eslint-plugin": "^5.38.0",
+    "@typescript-eslint/parser": "^5.38.0",
     "dotenv-cli": "^5.1.0",
     "eslint": "^7.32.0",
     "jest": "^28.0.3",

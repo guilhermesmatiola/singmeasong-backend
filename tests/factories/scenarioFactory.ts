@@ -19,8 +19,6 @@ export async function createScenario20Recommendations() {
 			data: { ...create20recomendations, score: Number(faker.random.numeric(3)) },
 		});
       }
-
-    //await prisma.recommendation.createMany({ data: createManyRecomendation });
 }
 
 export async function createScenarioToReturnOneRecommendation() {

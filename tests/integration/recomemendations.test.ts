@@ -194,6 +194,7 @@ describe("Test in route get /recommendations/top/amount", () => {
 		const result = await supertest(app).get(`/recommendations/top/${randomAmount}`).send();
 
 		expect(result.status).toBe(200);
+		expect(result.body.length).toBe(randomAmount);
 		expect(result.body).toBeInstanceOf(Array);
 	});
 
