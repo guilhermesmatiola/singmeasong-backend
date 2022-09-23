@@ -2,6 +2,10 @@ import { recommendationService } from "../../src/services/recommendationsService
 import { recommendationRepository } from "../../src/repositories/recommendationRepository";
 import { CreateRecommendationFactory } from "../factories/recommendFactory";
 import { Console } from "console";
+import {faker} from "@faker-js/faker"
+import { recommendationData } from "./factories/recommendationsFactory";
+import { conflictError } from "../../src/utils/errorUtils.js";
+
 
 beforeEach(async () => {
 	jest.resetAllMocks();
@@ -16,7 +20,6 @@ describe("Testing recommendation service - Unit tests", () => {
 			});
 
 		const created = jest.spyOn(recommendationRepository, "create").mockImplementationOnce(async () => {});
-
 		const recommendation = await CreateRecommendationFactory();
 
 		await recommendationService.insert(recommendation);
@@ -26,25 +29,22 @@ describe("Testing recommendation service - Unit tests", () => {
 		expect(created).toHaveBeenCalled();
 	});
 
-	it("test create conflict", async () => {
-		const recommendation = await CreateRecommendationFactory();
+	it("test create conflict: should answer with status 409", async () => {
+        const recommendation = recommendationData(0);
 
-		jest.spyOn(recommendationRepository, "findByName").mockResolvedValueOnce({ id: 10, ...recommendation, score: 10 });
+        jest.spyOn(recommendationRepository, "findByName").mockResolvedValueOnce(recommendation);
 
-		const error = recommendationService.insert(recommendation);
-
-		expect(error).rejects.toEqual({
-			type: "conflict",
-			message: "Recommendations names must be unique",
-		});
-	});
+        expect(async () => {
+            await recommendationService.insert(recommendation);
+        }).rejects.toEqual(conflictError("Recommendations names must be unique"));
+    });
 
 	it("test upvote service", async () => {
 
 		const find = jest.spyOn(recommendationRepository, "find").mockResolvedValueOnce({
 				id: 1,
-				name: "teste",
-				youtubeLink: "teste",
+				name: faker.lorem.words(),
+				youtubeLink: "https://www.youtube.com/watch?v=hjz6-opHCBc",
 				score: 11,
 			});
 
@@ -59,28 +59,30 @@ describe("Testing recommendation service - Unit tests", () => {
 		expect(update).toHaveBeenCalled();
 	});
 
-	it("test upvote with invalid id", async () => {
+	it("test upvote with invalid: should answer with throw - not_found", async () => {
 		jest.spyOn(recommendationRepository, "find").mockResolvedValueOnce(null);
 
-		const id = 1;
-		const error = recommendationService.upvote(id);
-
-		expect(error).rejects.toEqual({ type: "not_found", message: "" });
+		expect(async () => {
+			await recommendationService.upvote(3);
+		}).rejects.toEqual({
+			message: "",
+			type: "not_found",
+		});
 	});
 
 	it("test downvote service", async () => {
 
 		const find = jest.spyOn(recommendationRepository, "find").mockResolvedValueOnce({
 				id: 1,
-				name: "teste",
-				youtubeLink: "teste",
+				name: faker.lorem.words(),
+				youtubeLink: "https://www.youtube.com/watch?v=hjz6-opHCBc",
 				score: 5,
 			});
 
 		const update = jest.spyOn(recommendationRepository, "updateScore").mockResolvedValueOnce({
 				id: 1,
-				name: "teste",
-				youtubeLink: "teste",
+				name: faker.lorem.words(),
+				youtubeLink: "https://www.youtube.com/watch?v=hjz6-opHCBc",
 				score: 4,
 			});
 
@@ -91,41 +93,29 @@ describe("Testing recommendation service - Unit tests", () => {
 		expect(update).toHaveBeenCalled();
 	});
 
-	it("test downvote with invalid id", async () => {
+    it("test downvote with invalid: should answer with throw - not_found", async () => {
+        jest.spyOn(recommendationRepository, "find").mockResolvedValueOnce(null);
 
-		jest.spyOn(recommendationRepository, "find").mockResolvedValueOnce(null);
+        expect(async () => {
+            await recommendationService.downvote(3);
+        }).rejects.toEqual({
+            message: "",
+            type: "not_found",
+        });
+    });
 
-		const id = 1;
-		const error = recommendationService.downvote(id);
+    it("test if deletes with -5 downvoted: should called function remove recommendation", async () => {
+        const recommendation = recommendationData(-6);
 
-		expect(error).rejects.toEqual({ type: "not_found", message: "" });
-	});
+        jest.spyOn(recommendationRepository, "find").mockResolvedValueOnce(recommendation);
+        jest.spyOn(recommendationRepository, "updateScore").mockResolvedValueOnce(recommendation);
 
-	it("test if deletes with -5 downvoted", async () => {
+        const remove = jest.spyOn(recommendationRepository, "remove").mockResolvedValueOnce(null);
 
-		const find = jest.spyOn(recommendationRepository, "find").mockResolvedValueOnce({
-				id: 1,
-				name: "teste",
-				youtubeLink: "teste",
-				score: -5,
-			});
+        await recommendationService.downvote(434);
 
-		const update = jest.spyOn(recommendationRepository, "updateScore").mockResolvedValueOnce({
-				id: 1,
-				name: "teste",
-				youtubeLink: "teste",
-				score: -6,
-			});
-
-		const deleteRecommendation = jest.spyOn(recommendationRepository, "remove").mockImplementationOnce(async () => {});
-
-		const ID = 1;
-		await recommendationService.downvote(ID);
-
-		expect(find).toHaveBeenCalled();
-		expect(update).toHaveBeenCalled();
-		expect(deleteRecommendation).toHaveBeenCalled();
-	});
+        expect(remove).toBeCalled();
+    });
 
 	it("test get all recommendations", async () => {
 
@@ -141,9 +131,7 @@ describe("Testing recommendation service - Unit tests", () => {
 
 		const recommendation = await CreateRecommendationFactory();
 
-		const getByAmount = jest
-			.spyOn(recommendationRepository, "getAmountByScore")
-			.mockResolvedValueOnce([
+		const getByAmount = jest.spyOn(recommendationRepository, "getAmountByScore").mockResolvedValueOnce([
 				{ id: 1, ...recommendation, score: 3 },
 				{ id: 2, ...recommendation, score: 2 },
 				{ id: 3, ...recommendation, score: 1 },
@@ -173,11 +161,11 @@ describe("Testing recommendation service - Unit tests", () => {
 
 		expect(filter).toBe("lte");
 	});
-
+	
 	it("test in get random recommendation type: 'gt'", async () => {
 
 		const getRecommendations = jest.spyOn(recommendationRepository, "findAll").mockResolvedValueOnce([
-				{ id: 1, name: "just a test", youtubeLink: "https://www.youtube.com/watch?v=G8kiL6BGmeQ", score: 10 },
+				{ id: 1, name: faker.lorem.words(), youtubeLink: "https://www.youtube.com/watch?v=G8kiL6BGmeQ", score: Number(faker.random.numeric(3)) },
 			]);
 
 		jest.spyOn(recommendationService, "getScoreFilter").mockReturnValue("gt");
@@ -191,7 +179,7 @@ describe("Testing recommendation service - Unit tests", () => {
 	it("test in get random recommendation type: 'lte'", async () => {
 
 		const getRecommendations = jest.spyOn(recommendationRepository, "findAll").mockResolvedValueOnce([
-				{ id: 1, name: "teste", youtubeLink: "https://www.youtube.com/watch?v=G8kiL6BGmeQ", score: 10 },
+				{ id: 1, name: faker.lorem.words(), youtubeLink: "https://www.youtube.com/watch?v=G8kiL6BGmeQ", score: Number(faker.random.numeric(3)) },
 			]);
 
 		const getRandom = await recommendationService.getRandom();
@@ -200,11 +188,19 @@ describe("Testing recommendation service - Unit tests", () => {
 		expect(getRandom).toBeInstanceOf(Object);
 	});
 
-	it("test in fail case get random recommendation", async () => {
-		jest.spyOn(recommendationRepository, "findAll").mockResolvedValue([]);
+    it("test in fail case get random recommendation: should answer with throw error - not_found", async () => {
+        const random = 0.6;
 
-		const error = recommendationService.getRandom();
+        jest.spyOn(global.Math, "random").mockReturnValue(random);
+        jest.spyOn(recommendationRepository, "findAll").mockResolvedValueOnce([]);
+        jest.spyOn(recommendationRepository, "findAll").mockResolvedValueOnce([]);
 
-		expect(error).rejects.toEqual({ type: "not_found", message: "" });
-	});
+        expect(async () => {
+            await recommendationService.getRandom();
+        }).rejects.toEqual({
+            message: "",
+            type: "not_found",
+        });
+    });
+
 });
