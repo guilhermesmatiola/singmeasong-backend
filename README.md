@@ -32,6 +32,9 @@ Launches just unit test to comprove 100% accuracy of recommendation service.\
 Launches just interation test to comprove 100% accuracy of integration db~api.\
 
 
+### `endpoints:`
+
+
 - **POST `/recommendations`**
     
     Adiciona uma nova recomendação de música. A requisição tem o seguinte formato:
