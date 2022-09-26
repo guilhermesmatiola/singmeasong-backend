@@ -1,5 +1,5 @@
 import { prisma } from "../../src/database";
-import * as recommendationFactory from "./recommendFactory"
+import * as recommendationFactory from "./recommendFactory";
 import { faker } from "@faker-js/faker";
 
 export async function deleteData() {
@@ -9,16 +9,16 @@ export async function deleteData() {
 
 export async function createScenario20Recommendations() {
 
-    let createManyRecomendation = [];
+	const createManyRecomendation = [];
 
-    for (let i = 0; i < 19; i++) {
-        const create20recomendations = await recommendationFactory.CreateRecommendationFactory();
-        createManyRecomendation.push(create20recomendations)
+	for (let i = 0; i < 19; i++) {
+		const create20recomendations = await recommendationFactory.CreateRecommendationFactory();
+		createManyRecomendation.push(create20recomendations);
 
-        await prisma.recommendation.create({
+		await prisma.recommendation.create({
 			data: { ...create20recomendations, score: Number(faker.random.numeric(3)) },
 		});
-      }
+	}
 }
 
 export async function createScenarioToReturnOneRecommendation() {

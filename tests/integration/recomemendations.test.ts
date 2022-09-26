@@ -1,66 +1,65 @@
 import app from "../../src/app";
-import {prisma} from "../../src/database"
+import {prisma} from "../../src/database";
 import supertest from "supertest";
-import * as recommendationFactory from "../factories/recommendFactory"
-import * as scenarioFactory from "../factories/scenarioFactory"
+import * as recommendationFactory from "../factories/recommendFactory";
+import * as scenarioFactory from "../factories/scenarioFactory";
 
 beforeEach(async () =>{
-    await scenarioFactory.deleteData();
-})
+	await scenarioFactory.deleteData();
+});
 
 describe("Testing route post /recommendations", ()=>{
 
-    it("return 201 - success create recommendation", async () =>{
+	it("return 201 - success create recommendation", async () =>{
 
-        const postRecommendation = await recommendationFactory.CreateRecommendationFactory();
-        const result = await supertest(app).post("/recommendations").send(postRecommendation);
+		const postRecommendation = await recommendationFactory.CreateRecommendationFactory();
+		const result = await supertest(app).post("/recommendations").send(postRecommendation);
 
-        const verifyCreate = await prisma.recommendation.findUnique({
-            where: {name: postRecommendation.name}
-        });
+		const verifyCreate = await prisma.recommendation.findUnique({
+			where: {name: postRecommendation.name}
+		});
 
-        expect(result.status).toBe(201);
-        expect(verifyCreate).not.toBeNull();
+		expect(result.status).toBe(201);
+		expect(verifyCreate).not.toBeNull();
 
-    });
+	});
 
-    it("return 422 - wrong input: null invalid name", async () =>{
+	it("return 422 - wrong input: null invalid name", async () =>{
 
-        const postRecommendation = await recommendationFactory.CreateRecommendationFactory();
-        const result = await supertest(app).post("/recommendations").send({...postRecommendation, name:null});
+		const postRecommendation = await recommendationFactory.CreateRecommendationFactory();
+		const result = await supertest(app).post("/recommendations").send({...postRecommendation, name:null});
 
-        expect(result.status).toBe(422);
+		expect(result.status).toBe(422);
 
-    });
+	});
 
-    it("return 422 - wrong input: null invalid youtube link", async () =>{
+	it("return 422 - wrong input: null invalid youtube link", async () =>{
 
-        const postRecommendation = await recommendationFactory.CreateRecommendationFactory();
-        const result = await supertest(app).post("/recommendations").send({...postRecommendation, youtubeLink:null});
+		const postRecommendation = await recommendationFactory.CreateRecommendationFactory();
+		const result = await supertest(app).post("/recommendations").send({...postRecommendation, youtubeLink:null});
 
-        expect(result.status).toBe(422);
+		expect(result.status).toBe(422);
 
-    });
+	});
 
-    it("return 422 - wrong input: invalid youtube link", async () =>{
+	it("return 422 - wrong input: invalid youtube link", async () =>{
 
-        const postRecommendation = await recommendationFactory.CreateRecommendationFactory();
-        const result = await supertest(app).post("/recommendations").send({...postRecommendation, youtubeLink: "https://github.com/guilhermesmatiola/projeto21-singmeasong-back"});
+		const postRecommendation = await recommendationFactory.CreateRecommendationFactory();
+		const result = await supertest(app).post("/recommendations").send({...postRecommendation, youtubeLink: "https://github.com/guilhermesmatiola/projeto21-singmeasong-back"});
 
-        expect(result.status).toBe(422);
+		expect(result.status).toBe(422);
 
-    });
+	});
 
-    it("return 422 - wrong input: empty body", async () =>{
+	it("return 422 - wrong input: empty body", async () =>{
 
-        const postRecommendation = await recommendationFactory.CreateRecommendationFactory();
-        const result = await supertest(app).post("/recommendations").send({});
+		const result = await supertest(app).post("/recommendations").send({});
 
-        expect(result.status).toBe(422);
+		expect(result.status).toBe(422);
 
-    });
+	});
 
-    it("return 409 - already has a recommendations with this name", async () => {
+	it("return 409 - already has a recommendations with this name", async () => {
 
 		const postRecommendation = await recommendationFactory.CreateRecommendationFactory();
 
@@ -123,7 +122,7 @@ describe("Test in route post /recommendations/:id/upvote", () => {
 		expect(recommendationUpvoted.score).toBeGreaterThan(0);
 	});
 
-    it("return 404 - if have a invalid id", async () => {
+	it("return 404 - if have a invalid id", async () => {
 
 		const result = await supertest(app).post("/recommendations/123456789/upvote").send();
 
@@ -149,7 +148,7 @@ describe("Test in route post /recommendations/:id/downvote", () => {
 		expect(recommendationDownvoted.score).toBeLessThan(0);
 	});
 
-    it("return 200 - valid id and delete recommendation with -5 score", async () => {
+	it("return 200 - valid id and delete recommendation with -5 score", async () => {
 
 		const recommendationById = await scenarioFactory.createScenarioToDeleteWithDownvote();
 
@@ -174,7 +173,7 @@ describe("Test in route get /recommendations/random", () => {
 		expect(result.body).toBeInstanceOf(Object);
 	});
 
-    it("return 404 - no song posted", async () => {
+	it("return 404 - no song posted", async () => {
 
 		const result = await supertest(app).get("/recommendations/random").send();
 
@@ -198,7 +197,7 @@ describe("Test in route get /recommendations/top/amount", () => {
 		expect(result.body).toBeInstanceOf(Array);
 	});
 
-    it("return 200 - array in the correct order", async () => {
+	it("return 200 - array in the correct order", async () => {
 
 		await scenarioFactory.createScenario20Recommendations();
 
